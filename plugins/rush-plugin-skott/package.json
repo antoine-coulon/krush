@@ -1,6 +1,6 @@
 {
   "name": "rush-plugin-skott",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Skott plugin for Rush",
   "main": "./lib/index.js",
   "files": [
@@ -13,7 +13,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "prepublishOnly": "pnpm run build"
   },
   "keywords": [],
   "author": "",

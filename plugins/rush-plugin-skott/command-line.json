@@ -7,6 +7,13 @@
       "summary": "Opens a web application to visualize the dependency graph",
       "shellCommand": "node <packageFolder>/lib/visualize.js",
       "safeForSimultaneousRushProcesses": false
+    },
+    {
+      "name": "list-unused-packages",
+      "commandKind": "global",
+      "summary": "List unused packages for each project",
+      "shellCommand": "node <packageFolder>/lib/unused.js",
+      "safeForSimultaneousRushProcesses": false
     }
   ]
 }
