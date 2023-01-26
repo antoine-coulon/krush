@@ -3,14 +3,12 @@
   "plugins": [
     {
       "pluginName": "rush-visualize-graph",
-
       "description": "Adds a custom command \"rush visualize-graph\" that opens a web application to visualize the dependency graph",
-
-      /**
-       * (Optional) A path to a "command-line.json" file that defines Rush command line actions
-       * and parameters contributed by this plugin.  This config file has the same JSON schema
-       * as Rush's "common/config/rush/command-line.json" file.
-       */
+      "commandLineJsonFilePath": "./command-line.json"
+    },
+    {
+      "pluginName": "rush-list-unused-packages",
+      "description": "Adds a custom command \"rush list-unused-packages\" that lists unused packages for each project",
       "commandLineJsonFilePath": "./command-line.json"
     }
   ]
