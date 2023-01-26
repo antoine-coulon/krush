@@ -2,13 +2,8 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugin-manifest.schema.json",
   "plugins": [
     {
-      "pluginName": "rush-visualize-graph",
-      "description": "Adds a custom command \"rush visualize-graph\" that opens a web application to visualize the dependency graph",
-      "commandLineJsonFilePath": "./command-line.json"
-    },
-    {
-      "pluginName": "rush-list-unused-packages",
-      "description": "Adds a custom command \"rush list-unused-packages\" that lists unused packages for each project",
+      "pluginName": "rush-skott",
+      "description": "Adds custom commands \"rush visualize-graph\" and \"rush list-unused-packages\"",
       "commandLineJsonFilePath": "./command-line.json"
     }
   ]
