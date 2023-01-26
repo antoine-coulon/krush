@@ -1,0 +1,17 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-plugin-manifest.schema.json",
+  "plugins": [
+    {
+      "pluginName": "rush-visualize-graph",
+
+      "description": "Adds a custom command \"rush visualize-graph\" that opens a web application to visualize the dependency graph",
+
+      /**
+       * (Optional) A path to a "command-line.json" file that defines Rush command line actions
+       * and parameters contributed by this plugin.  This config file has the same JSON schema
+       * as Rush's "common/config/rush/command-line.json" file.
+       */
+      "commandLineJsonFilePath": "./command-line.json"
+    }
+  ]
+}

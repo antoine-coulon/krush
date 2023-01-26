@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "visualize-graph",
+      "commandKind": "global",
+      "summary": "Opens a web application to visualize the dependency graph",
+      "shellCommand": "node <packageFolder>/lib/visualize.js",
+      "safeForSimultaneousRushProcesses": false
+    }
+  ]
+}

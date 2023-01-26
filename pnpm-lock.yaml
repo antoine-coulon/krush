@@ -4,6 +4,7 @@ importers:
 
   plugins/rush-plugin-skott:
     specifiers:
+      '@types/node': ^18.11.18
       eslint: ^8.4.1
       eslint-config-prettier: ^8.3.0
       eslint-import-resolver-typescript: ^2.5.0
@@ -14,8 +15,9 @@ importers:
       typescript: ^4.9.4
       vitest: ^0.28.2
     dependencies:
-      skott: 0.15.3
+      skott: 0.15.3_@types+node@18.11.18
     devDependencies:
+      '@types/node': 18.11.18
       eslint: 8.32.0
       eslint-config-prettier: 8.6.0_eslint@8.32.0
       eslint-import-resolver-typescript: 2.7.1_ps7hf4l2dvbuxvtusmrfhmzsba
@@ -2695,7 +2697,7 @@ packages:
       totalist: 3.0.0
     dev: false
 
-  /skott-webapp/1.0.1:
+  /skott-webapp/1.0.1_@types+node@18.11.18:
     resolution: {integrity: sha512-lZD3Htq4XS4B65HEqJSqnqzxyiwWFdvfMayo2dUZU8tzisFYRHU8jBWfdsBID+lMIgbw1zlGsap165TL0QUisQ==}
     dependencies:
       '@egjs/hammerjs': 2.0.17
@@ -2710,7 +2712,7 @@ packages:
       vis-data: 7.1.4_uuid@8.3.2+vis-util@5.0.3
       vis-network: 9.1.2_6jdsa4q7sji2z33r4x4swdqz74
       vis-util: 5.0.3_35uoz5q4mpcvp75zwg3yfbh37i
-      vite: 3.2.5
+      vite: 3.2.5_@types+node@18.11.18
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -2720,7 +2722,7 @@ packages:
       - terser
     dev: false
 
-  /skott/0.15.3:
+  /skott/0.15.3_@types+node@18.11.18:
     resolution: {integrity: sha512-5I6Y3pT90GyOXPtkKVhkXDzMYQ2DJ2VrCzdIk4zKYnntrjJ7iayUDGJMaZysMHT/bhdbUzP3CC6M5IbwiQfBnw==}
     hasBin: true
     dependencies:
@@ -2740,7 +2742,7 @@ packages:
       polka: 0.5.2
       sade: 1.8.1
       sirv: 2.0.2
-      skott-webapp: 1.0.1
+      skott-webapp: 1.0.1_@types+node@18.11.18
       typescript: 4.9.4
     transitivePeerDependencies:
       - '@types/node'
@@ -3102,7 +3104,7 @@ packages:
       - terser
     dev: true
 
-  /vite/3.2.5:
+  /vite/3.2.5_@types+node@18.11.18:
     resolution: {integrity: sha512-4mVEpXpSOgrssFZAOmGIr85wPHKvaDAcXqxVxVRZhljkJOMZi1ibLibzjLHzJvcok8BMguLc7g1W6W/GqZbLdQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -3127,6 +3129,7 @@ packages:
       terser:
         optional: true
     dependencies:
+      '@types/node': 18.11.18
       esbuild: 0.15.18
       postcss: 8.4.21
       resolve: 1.22.1
