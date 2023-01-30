@@ -5,14 +5,14 @@
       "name": "visualize-graph",
       "commandKind": "global",
       "summary": "Opens a web application to visualize the dependency graph",
-      "shellCommand": "node <packageFolder>/lib/visualize.js",
+      "shellCommand": "node <packageFolder>/lib/visualize/main.js",
       "safeForSimultaneousRushProcesses": false
     },
     {
       "name": "list-unused-packages",
       "commandKind": "global",
       "summary": "List unused packages for each project",
-      "shellCommand": "node <packageFolder>/lib/unused.js",
+      "shellCommand": "node <packageFolder>/lib/unused/main.js",
       "safeForSimultaneousRushProcesses": false
     }
   ]

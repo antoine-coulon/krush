@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "description": "Skott plugin for Rush",
   "main": "./lib/index.js",
+  "type": "module",
   "files": [
     "lib",
     "command-line.json",
@@ -20,17 +21,26 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/compression": "^1.7.2",
     "@types/node": "^18.11.18",
+    "@types/polka": "^0.5.4",
     "eslint": "^8.4.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "memfs": "^3.4.13",
     "prettier": "^2.5.1",
     "typescript": "^4.9.4",
     "vitest": "^0.28.2"
   },
   "dependencies": {
-    "skott": "^0.15.3"
+    "@rushstack/rush-sdk": "^5.90.0",
+    "compression": "^1.7.4",
+    "polka": "^0.5.2",
+    "sirv": "^2.0.2",
+    "skott": "^0.16.1",
+    "skott-webapp": "^1.0.3",
+    "topenurl": "^1.1.1"
   }
 }
