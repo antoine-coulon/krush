@@ -3,7 +3,7 @@
   "plugins": [
     {
       "pluginName": "rush-skott",
-      "description": "Adds custom commands \"rush visualize-graph\" and \"rush list-unused-packages\"",
+      "description": "Adds custom commands \"rush graph\" and \"rush list-unused-packages\"",
       "commandLineJsonFilePath": "./command-line.json"
     }
   ]
