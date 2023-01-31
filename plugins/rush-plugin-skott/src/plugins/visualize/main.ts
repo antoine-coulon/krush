@@ -1,3 +1,4 @@
+import { DiGraph } from "digraph-js";
 import { ServerResponse } from "node:http";
 import skott, { SkottStructure } from "skott";
 import resolvePathToWebApp from "skott-webapp";
@@ -59,7 +60,8 @@ function openWebApplication(skottStructure: SkottStructure): void {
   const srv = polka().use(compress, assets);
 
   srv.get("/api/cycles", (_, response: ServerResponse) => {
-    const cycles: string[] = [];
+    const graph = DiGraph.fromRaw(skottStructure.graph);
+    const cycles = graph.findCycles({ maxDepth: 10 });
 
     response.setHeader("Content-Type", "application/json");
     response.end(JSON.stringify(cycles));
@@ -93,7 +95,6 @@ function openWebApplication(skottStructure: SkottStructure): void {
 
 async function main() {
   const rushStructure = await buildRushStructure();
-
   openWebApplication(rushStructure);
 }
 

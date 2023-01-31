@@ -37,6 +37,7 @@
   "dependencies": {
     "@rushstack/rush-sdk": "^5.90.0",
     "compression": "^1.7.4",
+    "digraph-js": "^2.1.0",
     "polka": "^0.5.2",
     "sirv": "^2.0.2",
     "skott": "^0.16.3",
