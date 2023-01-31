@@ -143,7 +143,7 @@ describe("Visualizer plugin", () => {
     });
   });
 
-  describe("When building the Rush graph", () => {
+  describe("When building the Rush data structure", () => {
     test("Should group project files nodes by project names", () => {
       const rushProjectReferences: RushProjectReferences[] = [
         { name: "@apps/app1", path: "apps/app1" },
@@ -173,9 +173,12 @@ describe("Visualizer plugin", () => {
         },
       };
 
-      expect(
-        createRushGraph(skottGraphWithRushDependencies, rushProjectReferences)
-      ).to.deep.equal({
+      const { graph, files } = createRushGraph(
+        skottGraphWithRushDependencies,
+        rushProjectReferences
+      );
+
+      expect(graph).to.deep.equal({
         "@apps/app1": {
           id: "@apps/app1",
           adjacentTo: [],
@@ -195,6 +198,7 @@ describe("Visualizer plugin", () => {
           },
         },
       });
+      expect(files).to.deep.equal(["apps/app1/index.js", "libs/lib1/index.js"]);
     });
 
     test("Should create links at the Rush project-level when there are links between files of different projects", () => {
@@ -212,7 +216,7 @@ describe("Visualizer plugin", () => {
             size: 0,
             thirdPartyDependencies: [],
             builtinDependencies: [],
-            rushDependencies: ["@libs/lib1"],
+            rushDependencies: ["@libs/lib1", "@libs/lib2"],
           },
         },
         "apps/app1/main.js": {
@@ -247,9 +251,12 @@ describe("Visualizer plugin", () => {
         },
       };
 
-      expect(
-        createRushGraph(skottGraphWithRushDependencies, rushProjectReferences)
-      ).to.deep.equal({
+      const { graph } = createRushGraph(
+        skottGraphWithRushDependencies,
+        rushProjectReferences
+      );
+
+      expect(graph).to.deep.equal({
         "@apps/app1": {
           id: "@apps/app1",
           adjacentTo: ["@libs/lib1", "@libs/lib2"],
@@ -301,16 +308,19 @@ describe("Visualizer plugin", () => {
           adjacentTo: [],
           body: {
             size: 3500,
-            thirdPartyDependencies: ["effect"],
-            builtinDependencies: ["node:child_process"],
+            thirdPartyDependencies: ["effect", "skott"],
+            builtinDependencies: ["node:child_process", "node:path"],
             rushDependencies: [],
           },
         },
       };
 
-      expect(
-        createRushGraph(skottGraphWithRushDependencies, rushProjectReferences)
-      ).to.deep.equal({
+      const { graph } = createRushGraph(
+        skottGraphWithRushDependencies,
+        rushProjectReferences
+      );
+
+      expect(graph).to.deep.equal({
         "@libs/lib1": {
           id: "@libs/lib1",
           adjacentTo: [],

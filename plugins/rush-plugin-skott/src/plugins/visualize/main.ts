@@ -31,6 +31,11 @@ async function buildRushStructure() {
       new RushDependencyResolver(projectNames),
       new EcmaScriptDependencyResolver(),
     ],
+    dependencyTracking: {
+      builtin: true,
+      thirdParty: true,
+      typeOnly: true,
+    },
   }).then(({ getStructure }) => getStructure());
 
   const rushGraph = createRushGraph(
@@ -87,10 +92,9 @@ function openWebApplication(skottStructure: SkottStructure): void {
 }
 
 async function main() {
-  const rushGraph = await buildRushStructure();
-  console.log(JSON.stringify(rushGraph, null, 2));
+  const rushStructure = await buildRushStructure();
 
-  openWebApplication({ graph: rushGraph, files: [] });
+  openWebApplication(rushStructure);
 }
 
 main().catch((error) => console.error(error));

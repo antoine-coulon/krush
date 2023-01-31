@@ -1,15 +1,10 @@
-import { SkottNode } from "skott";
+import { SkottNode, SkottStructure } from "skott";
 
 import {
   continueResolution,
   DependencyResolver,
   DependencyResolverOptions,
 } from "skott/modules/resolvers/base-resolver";
-
-export interface RushProjectReferences {
-  name: string;
-  path: string;
-}
 
 export class RushDependencyResolver
   implements DependencyResolver<RushDependencies>
@@ -39,42 +34,62 @@ export class RushDependencyResolver
   }
 }
 
+function createUniqueCollection<T>(collection: Array<T>): Array<T> {
+  return Array.from(new Set(collection));
+}
+
 export interface RushDependencies {
   rushDependencies?: string[];
+}
+
+export interface RushProjectReferences {
+  name: string;
+  path: string;
 }
 
 export function createRushGraph(
   skottGraph: Record<string, SkottNode<RushDependencies>>,
   rushProjectReferences: RushProjectReferences[]
-): Record<string, SkottNode> {
-  return Object.entries(skottGraph).reduce((rushGraph, [nodeId, nodeValue]) => {
-    const rushRef = rushProjectReferences.find((ref) =>
-      nodeId.startsWith(ref.path)
-    );
+): SkottStructure<unknown> {
+  return Object.values(skottGraph).reduce(
+    ({ graph, files }, node) => {
+      files.push(node.id);
 
-    if (rushRef) {
-      const rushNode = rushGraph[rushRef.name];
+      const rushRef = rushProjectReferences.find((ref) =>
+        node.id.startsWith(ref.path)
+      );
 
-      rushGraph[rushRef.name] = {
-        id: rushRef.name,
-        // handle duplicates
-        adjacentTo: (rushNode?.adjacentTo ?? []).concat(
-          skottGraph[nodeId]?.body.rushDependencies ?? []
-        ),
-        body: {
-          size: (rushNode?.body.size ?? 0) + nodeValue.body.size,
-          // provide rush thirdParty flag
-          thirdPartyDependencies: (
-            rushNode?.body.thirdPartyDependencies ?? []
-          ).concat(nodeValue.body.thirdPartyDependencies),
-          // provide rush builtin flag
-          builtinDependencies: (
-            rushNode?.body.builtinDependencies ?? []
-          ).concat(nodeValue.body.builtinDependencies),
-        },
-      };
-    }
+      if (rushRef) {
+        const rushNode = graph[rushRef.name];
 
-    return rushGraph;
-  }, {} as Record<string, SkottNode>);
+        graph[rushRef.name] = {
+          id: rushRef.name,
+          adjacentTo: createUniqueCollection(
+            (rushNode?.adjacentTo ?? []).concat(
+              skottGraph[node.id]?.body.rushDependencies ?? []
+            )
+          ),
+          body: {
+            size: (rushNode?.body.size ?? 0) + node.body.size,
+            thirdPartyDependencies: createUniqueCollection(
+              (rushNode?.body.thirdPartyDependencies ?? []).concat(
+                node.body.thirdPartyDependencies
+              )
+            ),
+            builtinDependencies: createUniqueCollection(
+              (rushNode?.body.builtinDependencies ?? []).concat(
+                node.body.builtinDependencies
+              )
+            ),
+          },
+        };
+      }
+
+      return { graph, files };
+    },
+    {
+      graph: {},
+      files: [],
+    } as SkottStructure<unknown>
+  );
 }
