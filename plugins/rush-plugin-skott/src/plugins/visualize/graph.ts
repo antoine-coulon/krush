@@ -4,6 +4,7 @@ import {
   continueResolution,
   DependencyResolver,
   DependencyResolverOptions,
+  skipNextResolvers,
 } from "skott/modules/resolvers/base-resolver";
 
 export class RushDependencyResolver
@@ -15,20 +16,22 @@ export class RushDependencyResolver
     moduleDeclaration,
     projectGraph,
     resolvedNodePath,
-  }: DependencyResolverOptions<RushDependencies>): Promise<
-    ReturnType<typeof continueResolution>
-  > {
+  }: DependencyResolverOptions<RushDependencies>) {
     if (this.rushProjectReferences.includes(moduleDeclaration)) {
       projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
         body.rushDependencies = (body.rushDependencies ?? []).concat(
           moduleDeclaration
         );
       });
-    } else {
-      projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
-        body.rushDependencies = [...(body.rushDependencies ?? [])];
-      });
+
+      // Ensure that the module treated as a rush dependency is not treated as a
+      // third-party dependency during the next resolver step
+      return skipNextResolvers();
     }
+
+    projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
+      body.rushDependencies = [...(body.rushDependencies ?? [])];
+    });
 
     return continueResolution();
   }

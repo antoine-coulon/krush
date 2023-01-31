@@ -2,6 +2,7 @@ import memfs from "memfs";
 import { defaultConfig, Skott } from "skott";
 import { InMemoryFileReader } from "skott/filesystem/file-reader";
 import { InMemoryFileWriter } from "skott/filesystem/file-writer";
+import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
 import { ModuleWalkerSelector } from "skott/modules/walkers/common";
 import { describe, expect, test } from "vitest";
 import {
@@ -135,6 +136,60 @@ describe("Visualizer plugin", () => {
           body: {
             size: 0,
             thirdPartyDependencies: [],
+            builtinDependencies: [],
+            rushDependencies: [],
+          },
+        },
+      });
+    });
+
+    test("Should only keep rushDependencies with no overlap with third-party dependencies", async () => {
+      mountFakeFileSystem({
+        "apps/app1/index.js": `
+          import "@libs/lib1";
+          import { Effect } from "effect";
+        `,
+        "libs/lib1/index.js": `
+          import * as _ from "lodash";
+        `,
+      });
+
+      const skott = new Skott(
+        {
+          ...defaultConfig,
+          dependencyResolvers: [
+            new RushDependencyResolver(["@libs/lib1"]),
+            new EcmaScriptDependencyResolver(),
+          ],
+          dependencyTracking: {
+            ...defaultConfig.dependencyTracking,
+            thirdParty: true,
+          },
+        },
+        new InMemoryFileReader(),
+        new InMemoryFileWriter(),
+        new ModuleWalkerSelector()
+      );
+
+      const { getStructure } = await skott.initialize();
+
+      expect(getStructure().graph).to.deep.equal({
+        "apps/app1/index.js": {
+          id: "apps/app1/index.js",
+          adjacentTo: [],
+          body: {
+            size: 0,
+            thirdPartyDependencies: ["effect"],
+            builtinDependencies: [],
+            rushDependencies: ["@libs/lib1"],
+          },
+        },
+        "libs/lib1/index.js": {
+          id: "libs/lib1/index.js",
+          adjacentTo: [],
+          body: {
+            size: 0,
+            thirdPartyDependencies: ["lodash"],
             builtinDependencies: [],
             rushDependencies: [],
           },
