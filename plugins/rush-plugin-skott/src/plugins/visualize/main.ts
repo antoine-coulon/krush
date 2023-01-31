@@ -85,6 +85,7 @@ function openWebApplication(skottStructure: SkottStructure): void {
 
 async function main() {
   const rushGraph = await buildRushStructure();
+  console.log(JSON.stringify(rushGraph, null, 2));
 
   openWebApplication({ graph: rushGraph, files: [] });
 }
