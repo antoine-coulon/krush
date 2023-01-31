@@ -59,7 +59,7 @@ function openWebApplication(skottStructure: SkottStructure): void {
   });
   const srv = polka().use(compress, assets);
 
-  srv.get("/api/cycles", (_, response: ServerResponse) => {
+  srv.get("/api/cycles", (_: any, response: ServerResponse) => {
     const graph = DiGraph.fromRaw(skottStructure.graph);
     const cycles = graph.findCycles({ maxDepth: 10 });
 
@@ -67,7 +67,7 @@ function openWebApplication(skottStructure: SkottStructure): void {
     response.end(JSON.stringify(cycles));
   });
 
-  srv.get("/api/analysis", (_, response: ServerResponse) => {
+  srv.get("/api/analysis", (_: any, response: ServerResponse) => {
     response.setHeader("Content-Type", "application/json");
     response.end(
       JSON.stringify({
