@@ -18,7 +18,7 @@ importers:
       polka: ^0.5.2
       prettier: ^2.5.1
       sirv: ^2.0.2
-      skott: ^0.16.2
+      skott: ^0.16.3
       skott-webapp: ^1.0.3
       topenurl: ^1.1.1
       typescript: ^4.9.4
@@ -28,7 +28,7 @@ importers:
       compression: 1.7.4
       polka: 0.5.2
       sirv: 2.0.2
-      skott: 0.16.2_@types+node@18.11.18
+      skott: 0.16.3_@types+node@18.11.18
       skott-webapp: 1.0.3_@types+node@18.11.18
       topenurl: 1.1.1
     devDependencies:
@@ -2903,8 +2903,8 @@ packages:
       - terser
     dev: false
 
-  /skott/0.16.2_@types+node@18.11.18:
-    resolution: {integrity: sha512-8/gS85kUTPpkd0fpIr7pyL8QEC1w36S1iv8uKGsHUqfMcWNNZCrW01eeSpuIySCT/P9aiKuY8X2BvLq7+5Gnlw==}
+  /skott/0.16.3_@types+node@18.11.18:
+    resolution: {integrity: sha512-aROFjOnzoy2d3OcLjYLrm+aSwfa5CPWRAB8cEfBNXzdhA65nHxYW8Ifpt91srnpjBLhzR0xRjV7i1bBbwZyMMA==}
     hasBin: true
     dependencies:
       '@typescript-eslint/typescript-estree': 5.49.0_typescript@4.9.4

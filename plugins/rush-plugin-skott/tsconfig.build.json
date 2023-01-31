@@ -4,7 +4,7 @@
     "declaration": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "outDir": "lib/"
+    "outDir": "lib"
   },
   "include": ["src/**/*.ts", "bin/**/*.ts", "index.ts"],
   "exclude": ["src/**/*.spec.ts"]

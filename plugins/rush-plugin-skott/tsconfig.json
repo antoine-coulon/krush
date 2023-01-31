@@ -3,7 +3,7 @@
     "target": "es2020",
     "lib": ["es2020"],
     "module": "es2020",
-    "moduleResolution": "Node",
+    "moduleResolution": "Node16",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
