@@ -18,8 +18,8 @@
     "prepublishOnly": "pnpm run build"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Antoine Coulon",
+  "license": "MIT",
   "devDependencies": {
     "@types/compression": "^1.7.2",
     "@types/node": "^18.11.18",
@@ -38,10 +38,11 @@
     "@rushstack/rush-sdk": "^5.90.0",
     "compression": "^1.7.4",
     "digraph-js": "^2.1.0",
+    "effect": "2.0.0-next.13",
     "kleur": "^4.1.5",
     "polka": "^0.5.2",
     "sirv": "^2.0.2",
-    "skott": "^0.16.3",
+    "skott": "^0.17.2",
     "skott-webapp": "^1.0.3",
     "topenurl": "^1.1.1"
   }

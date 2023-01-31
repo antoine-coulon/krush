@@ -10,6 +10,7 @@ importers:
       '@types/polka': ^0.5.4
       compression: ^1.7.4
       digraph-js: ^2.1.0
+      effect: 2.0.0-next.13
       eslint: ^8.4.1
       eslint-config-prettier: ^8.3.0
       eslint-import-resolver-typescript: ^2.5.0
@@ -20,7 +21,7 @@ importers:
       polka: ^0.5.2
       prettier: ^2.5.1
       sirv: ^2.0.2
-      skott: ^0.16.3
+      skott: ^0.17.2
       skott-webapp: ^1.0.3
       topenurl: ^1.1.1
       typescript: ^4.9.4
@@ -29,10 +30,11 @@ importers:
       '@rushstack/rush-sdk': 5.90.0
       compression: 1.7.4
       digraph-js: 2.1.0
+      effect: 2.0.0-next.13
       kleur: 4.1.5
       polka: 0.5.2
       sirv: 2.0.2
-      skott: 0.16.3_@types+node@18.11.18
+      skott: 0.17.2_@types+node@18.11.18
       skott-webapp: 1.0.3_@types+node@18.11.18
       topenurl: 1.1.1
     devDependencies:
@@ -2907,8 +2909,8 @@ packages:
       - terser
     dev: false
 
-  /skott/0.16.3_@types+node@18.11.18:
-    resolution: {integrity: sha512-aROFjOnzoy2d3OcLjYLrm+aSwfa5CPWRAB8cEfBNXzdhA65nHxYW8Ifpt91srnpjBLhzR0xRjV7i1bBbwZyMMA==}
+  /skott/0.17.2_@types+node@18.11.18:
+    resolution: {integrity: sha512-NxukPfDzZLEllmHxmWDwLgYeSDRKaPRRfd9roasd9z4nIiojEv0wbtrCkuKONeecH1XFXIY+iH5/sfGp5sr/DA==}
     hasBin: true
     dependencies:
       '@typescript-eslint/typescript-estree': 5.49.0_typescript@4.9.4

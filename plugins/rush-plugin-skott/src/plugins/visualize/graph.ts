@@ -1,3 +1,4 @@
+import { Option } from "effect";
 import { SkottNode, SkottStructure } from "skott";
 
 import {
@@ -16,7 +17,9 @@ export class RushDependencyResolver
     moduleDeclaration,
     projectGraph,
     resolvedNodePath,
-  }: DependencyResolverOptions<RushDependencies>) {
+  }: DependencyResolverOptions<RushDependencies>): Promise<
+    Option.Option<{ exitOnResolve: boolean }>
+  > {
     if (this.rushProjectReferences.includes(moduleDeclaration)) {
       projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
         body.rushDependencies = (body.rushDependencies ?? []).concat(
