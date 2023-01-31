@@ -1,9 +1,10 @@
+import { SkottNode } from "skott";
+
 import {
   continueResolution,
   DependencyResolver,
   DependencyResolverOptions,
-  SkottNode,
-} from "skott";
+} from "skott/modules/resolvers/base-resolver";
 
 export interface RushProjectReferences {
   name: string;
@@ -30,7 +31,7 @@ export class RushDependencyResolver
       });
     } else {
       projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
-        body.rushDependencies = [];
+        body.rushDependencies = [...(body.rushDependencies ?? [])];
       });
     }
 
@@ -39,7 +40,7 @@ export class RushDependencyResolver
 }
 
 export interface RushDependencies {
-  rushDependencies: string[];
+  rushDependencies?: string[];
 }
 
 export function createRushGraph(
@@ -56,14 +57,17 @@ export function createRushGraph(
 
       rushGraph[rushRef.name] = {
         id: rushRef.name,
+        // handle duplicates
         adjacentTo: (rushNode?.adjacentTo ?? []).concat(
           skottGraph[nodeId]?.body.rushDependencies ?? []
         ),
         body: {
           size: (rushNode?.body.size ?? 0) + nodeValue.body.size,
+          // provide rush thirdParty flag
           thirdPartyDependencies: (
             rushNode?.body.thirdPartyDependencies ?? []
           ).concat(nodeValue.body.thirdPartyDependencies),
+          // provide rush builtin flag
           builtinDependencies: (
             rushNode?.body.builtinDependencies ?? []
           ).concat(nodeValue.body.builtinDependencies),

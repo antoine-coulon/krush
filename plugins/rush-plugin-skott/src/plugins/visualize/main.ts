@@ -1,10 +1,5 @@
 import { ServerResponse } from "node:http";
-import skott, {
-  continueResolution,
-  DependencyResolver,
-  DependencyResolverOptions,
-  SkottStructure,
-} from "skott";
+import skott, { SkottStructure } from "skott";
 import resolvePathToWebApp from "skott-webapp";
 
 import compression from "compression";
@@ -13,7 +8,12 @@ import sirv from "sirv";
 import { open } from "topenurl";
 
 import RushSdk from "@rushstack/rush-sdk";
-import { createRushGraph, RushDependencyResolver } from "./graph.js";
+import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
+import {
+  createRushGraph,
+  RushDependencies,
+  RushDependencyResolver,
+} from "./graph.js";
 
 async function buildRushStructure() {
   const config = RushSdk.RushConfiguration.loadFromDefaultLocation({
@@ -26,8 +26,11 @@ async function buildRushStructure() {
 
   const projectNames = config.projects.map((project) => project.packageName);
 
-  const { graph: skottGraph } = await skott({
-    dependencyResolvers: [new RushDependencyResolver(projectNames)],
+  const { graph: skottGraph } = await skott<RushDependencies>({
+    dependencyResolvers: [
+      new RushDependencyResolver(projectNames),
+      new EcmaScriptDependencyResolver(),
+    ],
   }).then(({ getStructure }) => getStructure());
 
   const rushGraph = createRushGraph(

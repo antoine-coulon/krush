@@ -1,10 +1,7 @@
 import memfs from "memfs";
 import { defaultConfig, Skott } from "skott";
-// @ts-ignore
 import { InMemoryFileReader } from "skott/filesystem/file-reader";
-// @ts-ignore
 import { InMemoryFileWriter } from "skott/filesystem/file-writer";
-// @ts-ignore
 import { ModuleWalkerSelector } from "skott/modules/walkers/common";
 import { describe, expect, test } from "vitest";
 import {
@@ -12,7 +9,7 @@ import {
   RushDependencies,
   RushDependencyResolver,
   RushProjectReferences,
-} from "./graph";
+} from "./graph.js";
 
 function mountFakeFileSystem(
   fs: Record<string, string>,
@@ -30,10 +27,9 @@ describe("Visualizer plugin", () => {
       mountFakeFileSystem({
         "apps/app1/index.js": `
           import "@libs/lib1";
+          import _ from "lodash";
         `,
-        "libs/lib1/index.js": `
-          import * as _ from "lodash";
-        `,
+        "libs/lib1/index.js": ``,
       });
 
       const skott = new Skott(
@@ -66,7 +62,6 @@ describe("Visualizer plugin", () => {
             size: 0,
             thirdPartyDependencies: [],
             builtinDependencies: [],
-            rushDependencies: [],
           },
         },
       });
