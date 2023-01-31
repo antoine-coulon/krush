@@ -9,6 +9,7 @@ import sirv from "sirv";
 import { open } from "topenurl";
 
 import RushSdk from "@rushstack/rush-sdk";
+import kleur from "kleur";
 import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
 import {
   createRushGraph,
@@ -23,6 +24,11 @@ async function buildRushStructure() {
 
   if (!config) {
     throw new Error("Could not load 'rush.json' configuration");
+  } else {
+    console.log(
+      kleur.bold().green("✓"),
+      kleur.bold("Rush configuration found")
+    );
   }
 
   const projectNames = config.projects.map((project) => project.packageName);
@@ -46,6 +52,8 @@ async function buildRushStructure() {
       path: projectRelativeFolder,
     }))
   );
+
+  console.log(kleur.bold().green("✓"), kleur.bold("Rush graph created"));
 
   return rushGraph;
 }
@@ -85,10 +93,16 @@ function openWebApplication(skottStructure: SkottStructure): void {
 
   open(bindedAddress, (error) => {
     if (error) {
-      console.error(`Could not open @skott/webapp on ${bindedAddress}`);
+      console.log(
+        kleur.bold().red("✖"),
+        kleur.bold(`Could not open @skott/webapp on ${bindedAddress}`)
+      );
       process.exitCode = 1;
     } else {
-      console.log(`Opened webapp on ${bindedAddress}`);
+      console.log(
+        kleur.bold().green("✓"),
+        kleur.bold(`Opened webapp on ${bindedAddress}`)
+      );
     }
   });
 }
