@@ -18,7 +18,7 @@ importers:
       polka: ^0.5.2
       prettier: ^2.5.1
       sirv: ^2.0.2
-      skott: ^0.16.1
+      skott: ^0.16.2
       skott-webapp: ^1.0.3
       topenurl: ^1.1.1
       typescript: ^4.9.4
@@ -28,7 +28,7 @@ importers:
       compression: 1.7.4
       polka: 0.5.2
       sirv: 2.0.2
-      skott: 0.16.1_@types+node@18.11.18
+      skott: 0.16.2_@types+node@18.11.18
       skott-webapp: 1.0.3_@types+node@18.11.18
       topenurl: 1.1.1
     devDependencies:
@@ -1784,7 +1784,6 @@ packages:
 
   /fs-monkey/1.0.3:
     resolution: {integrity: sha512-cybjIfiiE+pTWicSCLFHSrXZ6EilF30oh91FDP9S2B051prEa7QWfrVTQm10/dDpswBDXZugPa1Ogu8Yh+HV0Q==}
-    dev: true
 
   /fs-tree-structure/0.0.1:
     resolution: {integrity: sha512-VGG9pKcvHHmwpwBGIRc5pxDWg4+tyY1VZo4Ar+ZOnektInj93/CHH9iFfB94BVtoMXNPfIf/seSqDJOZaGfPFQ==}
@@ -2332,7 +2331,6 @@ packages:
     engines: {node: '>= 4.0.0'}
     dependencies:
       fs-monkey: 1.0.3
-    dev: true
 
   /merge2/1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
@@ -2905,8 +2903,8 @@ packages:
       - terser
     dev: false
 
-  /skott/0.16.1_@types+node@18.11.18:
-    resolution: {integrity: sha512-DhflHSClSoM2Qz8UIzesPHJLcwDQ9uSFKWFolueySCAo9G6PdEbHY8csW0OI5ohDz6yGZIcJzSmaafM9PCVgzA==}
+  /skott/0.16.2_@types+node@18.11.18:
+    resolution: {integrity: sha512-8/gS85kUTPpkd0fpIr7pyL8QEC1w36S1iv8uKGsHUqfMcWNNZCrW01eeSpuIySCT/P9aiKuY8X2BvLq7+5Gnlw==}
     hasBin: true
     dependencies:
       '@typescript-eslint/typescript-estree': 5.49.0_typescript@4.9.4
@@ -2921,6 +2919,7 @@ packages:
       kleur: 4.1.5
       ligie: 0.0.6
       lodash.difference: 4.5.0
+      memfs: 3.4.13
       meriyah: 4.3.3
       openurl: 1.1.1
       ora: 6.1.2
