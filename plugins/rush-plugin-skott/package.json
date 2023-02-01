@@ -1,6 +1,6 @@
 {
   "name": "rush-plugin-skott",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Skott plugin for Rush",
   "main": "./lib/index.js",
   "type": "module",
