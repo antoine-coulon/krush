@@ -1,6 +1,6 @@
 {
   "name": "rush-plugin-skott",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Skott plugin for Rush",
   "main": "./lib/index.js",
   "type": "module",
@@ -43,7 +43,7 @@
     "polka": "^0.5.2",
     "sirv": "^2.0.2",
     "skott": "^0.17.3",
-    "skott-webapp": "^1.0.3",
+    "skott-webapp": "^1.0.5",
     "topenurl": "^1.1.1"
   }
 }
