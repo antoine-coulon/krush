@@ -1,51 +1,24 @@
 import { performance } from "node:perf_hooks";
 
-import RushSdk from "@rushstack/rush-sdk";
+import RushSdk, { DependencyType } from "@rushstack/rush-sdk";
 import { Effect, pipe } from "effect";
+import { prompt } from "enquirer";
 import kleur from "kleur";
 import skott from "skott";
 import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
-
-class RushConfigurationError extends Error {
-  readonly _tag = "RushConfigurationError";
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-function loadRushConfiguration() {
-  return pipe(
-    Effect.attempt(() => {
-      const config = RushSdk.RushConfiguration.loadFromDefaultLocation({
-        startingFolder: process.cwd(),
-      });
-
-      if (!config) {
-        throw new Error();
-      }
-
-      console.log(
-        kleur.bold().green("✓"),
-        kleur.bold().white("Rush configuration found")
-      );
-
-      return config;
-    }),
-    Effect.orElseFail(
-      () =>
-        new RushConfigurationError("Could not load 'rush.json' configuration")
-    )
-  );
-}
+import { loadRushConfiguration } from "../workspace.js";
+import { pruneInteractive } from "./prune.js";
 
 function collectUnusedDependencies({
   path,
   name,
   relativePath,
+  project,
 }: {
   path: string;
   name: string;
   relativePath: string;
+  project: RushSdk.RushConfigurationProject;
 }) {
   return pipe(
     Effect.tryPromise(() =>
@@ -59,10 +32,21 @@ function collectUnusedDependencies({
         },
       }).then(({ findUnusedDependencies }) => findUnusedDependencies())
     ),
+    Effect.tap(() => {
+      console.log(
+        kleur
+          .bold()
+          .yellow(
+            `Warning: some unused dependencies might be false negatives (e.g: used in some specific runtime configuration files that could not be analyzed).`
+          )
+      );
+      return Effect.unit();
+    }),
     Effect.map(({ thirdParty }) => ({
       unused: thirdParty,
       name,
       relativePath,
+      project,
     })),
     Effect.tapError(() => {
       console.log();
@@ -75,7 +59,38 @@ function collectUnusedDependencies({
   );
 }
 
-function main() {
+function listUnusedDependencies(
+  projectsResults: Array<{
+    unused: string[];
+    name: string;
+    relativePath: string;
+    project: RushSdk.RushConfigurationProject;
+  }>
+) {
+  return pipe(
+    projectsResults,
+    Effect.forEach(({ name, unused, relativePath }) => {
+      return Effect.sync(() => {
+        console.log();
+        console.log(
+          kleur.bold().magenta(name),
+          kleur.bold().grey(`(${relativePath})`)
+        );
+
+        if (unused.length === 0) {
+          console.log(kleur.bold().green(" ✓ No unused dependencies"));
+          return;
+        }
+
+        for (const packageName of unused) {
+          console.log(kleur.bold().yellow(` ✖ ${packageName}`));
+        }
+      });
+    })
+  );
+}
+
+function main(options = { interactive: false }) {
   return pipe(
     loadRushConfiguration(),
     Effect.map((config) =>
@@ -84,6 +99,8 @@ function main() {
           name: packageName,
           path: projectFolder,
           relativePath: projectRelativeFolder,
+          // Deal with not found project
+          project: config.getProjectByName(packageName)!,
         })
       )
     ),
@@ -94,28 +111,19 @@ function main() {
         Effect.withParallelism(10)
       )
     ),
-    Effect.map((projectsResults) => {
-      for (const { name, unused, relativePath } of projectsResults) {
-        console.log();
-        console.log(
-          kleur.bold().magenta(name),
-          kleur.bold().grey(`(${relativePath})`)
-        );
-
-        if (unused.length === 0) {
-          console.log(kleur.bold().green(" ✓ No unused dependencies"));
-          continue;
-        }
-
-        for (const packageName of unused) {
-          console.log(kleur.bold().yellow(` ✖ ${packageName}`));
-        }
+    Effect.map((results) => Array.from(results)),
+    Effect.flatMap((projectsResults) => {
+      if (options.interactive) {
+        return pruneInteractive(projectsResults);
       }
+
+      return listUnusedDependencies(projectsResults);
     })
   );
 }
 
 const timing = performance.now();
+
 Effect.unsafeRunPromise(main()).finally(() => {
   console.log();
   console.log(
