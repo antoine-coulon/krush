@@ -1,7 +1,9 @@
 import { performance } from "node:perf_hooks";
 
-import RushSdk, { DependencyType } from "@rushstack/rush-sdk";
-import { Effect, pipe } from "effect";
+import RushSdk from "@rushstack/rush-sdk";
+import * as Effect from "@effect/io/Effect";
+import { pipe } from "@effect/data/Function";
+import * as Option from "@effect/data/Option";
 import { prompt } from "enquirer";
 import kleur from "kleur";
 import skott from "skott";
@@ -32,16 +34,6 @@ function collectUnusedDependencies({
         },
       }).then(({ findUnusedDependencies }) => findUnusedDependencies())
     ),
-    Effect.tap(() => {
-      console.log(
-        kleur
-          .bold()
-          .yellow(
-            `Warning: some unused dependencies might be false negatives (e.g: used in some specific runtime configuration files that could not be analyzed).`
-          )
-      );
-      return Effect.unit();
-    }),
     Effect.map(({ thirdParty }) => ({
       unused: thirdParty,
       name,
@@ -90,24 +82,52 @@ function listUnusedDependencies(
   );
 }
 
-function main(options = { interactive: false }) {
+function findProjectByName(name: string, config: RushSdk.RushConfiguration) {
+  return pipe(
+    Effect.attempt(() => config.getProjectByName(name)),
+    Effect.map(Option.fromNullable),
+    Effect.someOrFailException,
+    Effect.orDie
+  );
+}
+
+function main(options = { interactive: true }) {
   return pipe(
     loadRushConfiguration(),
-    Effect.map((config) =>
-      config.projects.map(
-        ({ packageName, projectFolder, projectRelativeFolder }) => ({
-          name: packageName,
-          path: projectFolder,
-          relativePath: projectRelativeFolder,
-          // Deal with not found project
-          project: config.getProjectByName(packageName)!,
-        })
+    Effect.flatMap((config) =>
+      pipe(
+        config.projects,
+        Effect.forEach(
+          ({ packageName, projectFolder, projectRelativeFolder }) =>
+            pipe(
+              findProjectByName(packageName, config),
+              Effect.map((project) => ({
+                name: packageName,
+                path: projectFolder,
+                relativePath: projectRelativeFolder,
+                project,
+              }))
+            )
+        )
       )
     ),
-    Effect.map((projects) => projects.map(collectUnusedDependencies)),
-    Effect.flatMap((listOfProjectsToAnalyze) =>
+    Effect.tap(() => {
+      console.log();
+      console.log(
+        kleur
+          .bold()
+          .yellow(
+            `Warning: some unused dependencies might be false negatives (e.g: used in some specific runtime configuration files that could not be analyzed).`
+          )
+      );
+      return Effect.unit();
+    }),
+    Effect.map((projects) =>
+      Array.from(projects).map(collectUnusedDependencies)
+    ),
+    Effect.flatMap((projectsAnalysis) =>
       pipe(
-        Effect.collectAllSuccessesPar(listOfProjectsToAnalyze),
+        Effect.collectAllSuccessesPar(projectsAnalysis),
         Effect.withParallelism(10)
       )
     ),
@@ -124,7 +144,7 @@ function main(options = { interactive: false }) {
 
 const timing = performance.now();
 
-Effect.unsafeRunPromise(main()).finally(() => {
+Effect.runPromise(main()).finally(() => {
   console.log();
   console.log(
     kleur.bold().white(`✨ Done in ${Math.round(performance.now() - timing)}ms`)

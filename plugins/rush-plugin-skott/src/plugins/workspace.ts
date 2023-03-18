@@ -1,4 +1,5 @@
-import { Effect, pipe } from "effect";
+import * as Effect from "@effect/io/Effect";
+import { pipe } from "@effect/data/Function";
 
 import RushSdk from "@rushstack/rush-sdk";
 import kleur from "kleur";

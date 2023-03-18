@@ -4,13 +4,14 @@ importers:
 
   plugins/rush-plugin-skott:
     specifiers:
+      '@effect/data': 0.4.1
+      '@effect/io': 0.8.0
       '@rushstack/rush-sdk': ^5.90.0
       '@types/compression': ^1.7.2
       '@types/node': ^18.11.18
       '@types/polka': ^0.5.4
       compression: ^1.7.4
       digraph-js: ^2.1.0
-      effect: 2.0.0-next.13
       enquirer: ^2.3.6
       eslint: ^8.4.1
       eslint-config-prettier: ^8.3.0
@@ -28,10 +29,11 @@ importers:
       typescript: ^4.9.4
       vitest: ^0.28.2
     dependencies:
+      '@effect/data': 0.4.1
+      '@effect/io': 0.8.0
       '@rushstack/rush-sdk': 5.90.0
       compression: 1.7.4
       digraph-js: 2.1.0
-      effect: 2.0.0-next.13
       enquirer: 2.3.6
       kleur: 4.1.5
       polka: 0.5.2
@@ -174,12 +176,22 @@ packages:
       to-fast-properties: 2.0.0
     dev: false
 
+  /@effect/data/0.4.1:
+    resolution: {integrity: sha512-FdQ0qbYL7t+GP5eWdAPC+oeN2w3zqnujrdDLp/sj58UtMxFSHg21crprmbmiAJAWsL5EdB9aZzcisBGn382xHg==}
+    dev: false
+
   /@effect/io/0.0.32:
     resolution: {integrity: sha512-5Qd8fanB2EQCl0Hwggyzk0/vx8oGrjgKRgZyX14JlszzBi8UAJ6iC1vjjsMQbObRZRNF+fnmN+Zre0T4+Opl7w==}
     dependencies:
       '@effect/printer': 0.1.11
       '@fp-ts/core': 0.0.9
       '@fp-ts/data': 0.0.22
+    dev: false
+
+  /@effect/io/0.8.0:
+    resolution: {integrity: sha512-JJUs05oiHzh/Eupf5mgeLRFA4RXJAJo2DNxPC4ZVXwhvgJeqJ/G0ftYo3znOO0vKLzXjw8WYrnXPBM1nYLPnfQ==}
+    dependencies:
+      '@effect/data': 0.4.1
     dev: false
 
   /@effect/printer/0.1.11:

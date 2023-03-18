@@ -1,6 +1,7 @@
-import RushSdk, { DependencyType } from "@rushstack/rush-sdk";
-import { Effect, pipe } from "effect";
-import { prompt } from "enquirer";
+import * as Effect from "@effect/io/Effect";
+import { pipe } from "@effect/data/Function";
+import RushSdk from "@rushstack/rush-sdk";
+import Enquirer from "enquirer";
 import kleur from "kleur";
 
 interface AnalyzedProject {
@@ -10,15 +11,35 @@ interface AnalyzedProject {
   project: RushSdk.RushConfigurationProject;
 }
 
-function makePrunePrompt(unusedDependencies: string[]): Promise<string[]> {
-  return prompt([
+function makePrunePrompt(analyzedProject: AnalyzedProject): Promise<string[]> {
+  console.log();
+
+  return Enquirer.prompt([
     {
       type: "multiselect",
       name: "selection",
-      message: "Select a dependency to remove",
-      choices: unusedDependencies.map((name) => ({ name, value: name })),
+      message: kleur.bold().white(analyzedProject.name),
+      choices: analyzedProject.unused.map((name) => ({ name, value: name })),
     },
-  ]);
+    // @ts-ignore
+  ]).then(({ selection }) => selection);
+}
+
+/**
+ * TODO: Handle all types of dependencies. For now, only "dependencies" and
+ * "devDependencies" are supported.
+ */
+function getDependencyType(
+  project: RushSdk.RushConfigurationProject,
+  dependencyName: string
+): RushSdk.DependencyType {
+  const deps = project.packageJson.dependencies ?? {};
+
+  if (deps[dependencyName]) {
+    return RushSdk.DependencyType.Regular;
+  }
+
+  return RushSdk.DependencyType.Dev;
 }
 
 function pruneDependenciesFromProjects(
@@ -32,55 +53,89 @@ function pruneDependenciesFromProjects(
     pruneInformation,
     Effect.forEachPar(({ project, depsToPrune }) =>
       pipe(
-        depsToPrune,
-        Effect.forEach((depToPrune) => {
-          return pipe(
-            Effect.attempt(() =>
-              project.packageJsonEditor.removeDependency(
-                depToPrune,
-                DependencyType.Regular
+        Effect.succeed(depsToPrune),
+        Effect.tap(() => {
+          if (depsToPrune.length > 0) {
+            console.log();
+            console.log(kleur.bold().magenta(project.packageName));
+          }
+          return Effect.unit();
+        }),
+        Effect.flatMap(
+          Effect.forEach((depToPrune) => {
+            return pipe(
+              Effect.sync(() => getDependencyType(project, depToPrune)),
+              Effect.flatMap((dependencyType) =>
+                pipe(
+                  Effect.attempt(() => {
+                    project.packageJsonEditor.removeDependency(
+                      depToPrune,
+                      dependencyType
+                    );
+
+                    project.packageJsonEditor.saveIfModified();
+                  }),
+                  Effect.tapBoth(
+                    () => {
+                      return Effect.sync(() => {
+                        console.log(
+                          kleur.bold().red("  ✗"),
+                          kleur.bold().white(`Failed to remove ${depToPrune}`),
+                          kleur.bold().grey(`(${dependencyType})`)
+                        );
+                      });
+                    },
+                    () => {
+                      return Effect.sync(() => {
+                        console.log(
+                          kleur.bold().green("  ✓"),
+                          kleur.bold().white(depToPrune),
+                          kleur.bold().grey(`(${dependencyType})`)
+                        );
+                      });
+                    }
+                  ),
+                  Effect.tap(() => {
+                    console.log();
+                    return Effect.unit();
+                  })
+                )
               )
-            ),
-            Effect.tapBoth(
-              () => {
-                return Effect.sync(() => {
-                  console.log(
-                    kleur.bold().red("✗"),
-                    kleur
-                      .bold()
-                      .white(
-                        `Failed to remove ${depToPrune} from ${project.packageName}`
-                      )
-                  );
-                });
-              },
-              () => {
-                return Effect.sync(() => {
-                  console.log(
-                    kleur.bold().green("✓"),
-                    kleur
-                      .bold()
-                      .white(
-                        `Removed ${depToPrune} from ${project.packageName}`
-                      )
-                  );
-                });
-              }
-            )
-          );
-        })
+            );
+          })
+        )
       )
     )
   );
 }
 
-export function pruneInteractive(projectResults: Array<AnalyzedProject>) {
+export function pruneInteractive(analyzedProjects: Array<AnalyzedProject>) {
   return pipe(
-    projectResults,
-    Effect.forEach((result) =>
+    analyzedProjects,
+    Effect.filter(({ unused, name }) =>
       pipe(
-        Effect.tryPromise(() => makePrunePrompt(result.unused)),
-        Effect.map((depsToPrune) => ({ depsToPrune, ...result }))
+        Effect.succeed(unused.length > 0),
+        Effect.tap(() => {
+          if (unused.length === 0) {
+            console.log();
+            console.log(
+              kleur.bold().grey(`Skipped ${name}. No unused dependencies found`)
+            );
+          }
+          return Effect.unit();
+        })
+      )
+    ),
+    Effect.flatMap(
+      Effect.forEach((result) =>
+        pipe(
+          Effect.tryPromise(() => makePrunePrompt(result)),
+          Effect.map((depsToPrune) => ({ depsToPrune, ...result })),
+          Effect.tap(() => {
+            console.log();
+            return Effect.unit();
+          })
+        )
       )
     ),
     Effect.flatMap((projects) =>
