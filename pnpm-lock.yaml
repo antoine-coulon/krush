@@ -23,7 +23,7 @@ importers:
       polka: ^0.5.2
       prettier: ^2.5.1
       sirv: ^2.0.2
-      skott: ^0.19.0
+      skott: ^0.20.0
       skott-webapp: ^1.0.5
       topenurl: ^1.1.1
       typescript: ^4.9.4
@@ -38,7 +38,7 @@ importers:
       kleur: 4.1.5
       polka: 0.5.2
       sirv: 2.0.2
-      skott: 0.19.0_@types+node@18.11.18
+      skott: 0.20.0_@types+node@18.11.18
       skott-webapp: 1.0.5_@types+node@18.11.18
       topenurl: 1.1.1
     devDependencies:
@@ -3305,8 +3305,8 @@ packages:
       - terser
     dev: false
 
-  /skott/0.19.0_@types+node@18.11.18:
-    resolution: {integrity: sha512-74xX7RUP2GOvoRFQd6guh2vm62oaBCKMBxEeBwhjKUwI30XmbXlYuMjlfVHO5Jr33Sazm082beoXChq75zleaA==}
+  /skott/0.20.0_@types+node@18.11.18:
+    resolution: {integrity: sha512-bPrUQhdKWTX7tEBSdqtKmXda4vc8E8YKdOgxibnRL+rOrUcnHd1W88bZjvAqu9gP/d2qBPKkbXHhv4JFC3MF4A==}
     hasBin: true
     dependencies:
       '@effect/data': 0.4.1
