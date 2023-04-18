@@ -1,51 +1,9 @@
-import { Option } from "effect";
 import { SkottNode, SkottStructure } from "skott";
 
-import {
-  continueResolution,
-  DependencyResolver,
-  DependencyResolverOptions,
-  skipNextResolvers,
-} from "skott/modules/resolvers/base-resolver";
-
-export class RushDependencyResolver
-  implements DependencyResolver<RushDependencies>
-{
-  constructor(private readonly rushProjectReferences: string[]) {}
-
-  async resolve({
-    moduleDeclaration,
-    projectGraph,
-    resolvedNodePath,
-  }: DependencyResolverOptions<RushDependencies>): Promise<
-    Option.Option<{ exitOnResolve: boolean }>
-  > {
-    if (this.rushProjectReferences.includes(moduleDeclaration)) {
-      projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
-        body.rushDependencies = (body.rushDependencies ?? []).concat(
-          moduleDeclaration
-        );
-      });
-
-      // Ensure that the module treated as a rush dependency is not treated as a
-      // third-party dependency during the next resolver step
-      return skipNextResolvers();
-    }
-
-    projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
-      body.rushDependencies = [...(body.rushDependencies ?? [])];
-    });
-
-    return continueResolution();
-  }
-}
+import { RushDependencies } from "./dependency-resolver.js";
 
 function createUniqueCollection<T>(collection: Array<T>): Array<T> {
   return Array.from(new Set(collection));
-}
-
-export interface RushDependencies {
-  rushDependencies?: string[];
 }
 
 export interface RushProjectReferences {

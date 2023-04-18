@@ -1,35 +1,24 @@
-import { DiGraph } from "digraph-js";
-import { ServerResponse } from "node:http";
-import skott, { SkottStructure } from "skott";
-import resolvePathToWebApp from "skott-webapp";
-
+import * as Effect from "@effect/io/Effect";
 import compression from "compression";
+import { DiGraph } from "digraph-js";
+import kleur from "kleur";
+import { ServerResponse } from "node:http";
 import polka from "polka";
 import sirv from "sirv";
+import skott, { SkottStructure } from "skott";
+import resolvePathToWebApp from "skott-webapp";
+import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
 import { open } from "topenurl";
 
-import RushSdk from "@rushstack/rush-sdk";
-import kleur from "kleur";
-import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
+import { loadRushConfiguration } from "../workspace.js";
 import {
-  createRushGraph,
   RushDependencies,
   RushDependencyResolver,
-} from "./graph.js";
+} from "./dependency-resolver.js";
+import { createRushGraph } from "./graph.js";
 
 async function buildRushStructure() {
-  const config = RushSdk.RushConfiguration.loadFromDefaultLocation({
-    startingFolder: process.cwd(),
-  });
-
-  if (!config) {
-    throw new Error("Could not load 'rush.json' configuration");
-  } else {
-    console.log(
-      kleur.bold().green("✓"),
-      kleur.bold("Rush configuration found")
-    );
-  }
+  const config = await Effect.runPromise(loadRushConfiguration());
 
   const projectNames = config.projects.map((project) => project.packageName);
 

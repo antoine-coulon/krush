@@ -5,12 +5,8 @@ import { InMemoryFileWriter } from "skott/filesystem/file-writer";
 import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
 import { ModuleWalkerSelector } from "skott/modules/walkers/common";
 import { describe, expect, test } from "vitest";
-import {
-  createRushGraph,
-  RushDependencies,
-  RushDependencyResolver,
-  RushProjectReferences,
-} from "./graph.js";
+import { RushDependencyResolver } from "./dependency-resolver.js";
+import { createRushGraph, RushProjectReferences } from "./graph.js";
 
 function mountFakeFileSystem(
   fs: Record<string, string>,
