@@ -11,9 +11,27 @@ export interface RushProjectReferences {
   path: string;
 }
 
+function isRushWorkspaceDependency(
+  rushProjectReferences: RushProjectReferences[]
+) {
+  return (dependency: string) =>
+    rushProjectReferences.find((ref) => ref.name === dependency);
+}
+
+function isThirdPartyDependency(
+  rushProjectReferences: RushProjectReferences[]
+) {
+  return (dependency: string) =>
+    !rushProjectReferences.find((ref) => ref.name === dependency);
+}
+
 export function createRushGraph(
   skottGraph: Record<string, SkottNode<RushDependencies>>,
-  rushProjectReferences: RushProjectReferences[]
+  rushProjectReferences: RushProjectReferences[],
+  skottWorkspace: Record<
+    string,
+    { prodDependencies: string[]; devDependencies: string[] }
+  > = {}
 ): SkottStructure<unknown> {
   return Object.values(skottGraph).reduce(
     ({ graph, files }, node) => {
@@ -25,20 +43,42 @@ export function createRushGraph(
 
       if (rushRef) {
         const rushNode = graph[rushRef.name];
+        const prodDependencies =
+          skottWorkspace[rushRef.name]?.prodDependencies ?? [];
+        const devDependencies =
+          skottWorkspace[rushRef.name]?.devDependencies ?? [];
 
         graph[rushRef.name] = {
           id: rushRef.name,
           adjacentTo: createUniqueCollection(
-            (rushNode?.adjacentTo ?? []).concat(
-              skottGraph[node.id]?.body.rushDependencies ?? []
-            )
+            (rushNode?.adjacentTo ?? [])
+              .concat(skottGraph[node.id]?.body.rushDependencies ?? [])
+              .concat(
+                prodDependencies.filter(
+                  isRushWorkspaceDependency(rushProjectReferences)
+                )
+              )
+              .concat(
+                devDependencies.filter(
+                  isRushWorkspaceDependency(rushProjectReferences)
+                )
+              )
           ),
           body: {
             size: (rushNode?.body.size ?? 0) + node.body.size,
             thirdPartyDependencies: createUniqueCollection(
-              (rushNode?.body.thirdPartyDependencies ?? []).concat(
-                node.body.thirdPartyDependencies
-              )
+              (rushNode?.body.thirdPartyDependencies ?? [])
+                .concat(node.body.thirdPartyDependencies)
+                .concat(
+                  prodDependencies.filter(
+                    isThirdPartyDependency(rushProjectReferences)
+                  )
+                )
+                .concat(
+                  devDependencies.filter(
+                    isThirdPartyDependency(rushProjectReferences)
+                  )
+                )
             ),
             builtinDependencies: createUniqueCollection(
               (rushNode?.body.builtinDependencies ?? []).concat(

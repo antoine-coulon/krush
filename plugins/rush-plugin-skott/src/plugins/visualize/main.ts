@@ -39,7 +39,9 @@ async function buildRushStructure() {
     config.projects.map(({ packageName, projectRelativeFolder }) => ({
       name: packageName,
       path: projectRelativeFolder,
-    }))
+    })),
+    // @TODO: implement that in skott
+    {}
   );
 
   console.log(kleur.bold().green("✓"), kleur.bold("Rush graph created"));
