@@ -1,12 +1,12 @@
 import memfs from "memfs";
 import { defaultConfig, Skott } from "skott";
-import { InMemoryFileReader } from "skott/filesystem/file-reader";
 import { InMemoryFileWriter } from "skott/filesystem/file-writer";
 import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
 import { ModuleWalkerSelector } from "skott/modules/walkers/common";
 import { describe, expect, test } from "vitest";
 import { RushDependencyResolver } from "./dependency-resolver.js";
-import { createRushGraph, RushProjectReferences } from "./graph.js";
+import { createRushGraph, type RushProjectReferences } from "./graph.js";
+import { InMemoryFileReader } from "skott/filesystem/fake/file-reader";
 
 function mountFakeFileSystem(
   fs: Record<string, string>,
@@ -18,9 +18,16 @@ function mountFakeFileSystem(
   memfs.vol.fromJSON(fs, mountingPoint);
 }
 
+const fakeLogger = {
+  failure: () => {},
+  success: () => {},
+  info: () => {},
+  startInfo: () => () => {},
+};
+
 describe("Visualizer plugin", () => {
   describe("When resolving Rush projects dependencies", () => {
-    describe("When using source code analysis", () => {
+    describe("When only using source code analysis", () => {
       test("Should link rushDependencies for one node with a dependency to another Rush project", async () => {
         mountFakeFileSystem({
           "apps/app1/index.js": `
@@ -37,7 +44,8 @@ describe("Visualizer plugin", () => {
           },
           new InMemoryFileReader(),
           new InMemoryFileWriter(),
-          new ModuleWalkerSelector()
+          new ModuleWalkerSelector(),
+          fakeLogger
         );
 
         const { getStructure } = await skott.initialize();
@@ -91,7 +99,8 @@ describe("Visualizer plugin", () => {
           },
           new InMemoryFileReader(),
           new InMemoryFileWriter(),
-          new ModuleWalkerSelector()
+          new ModuleWalkerSelector(),
+          fakeLogger
         );
 
         const { getStructure } = await skott.initialize();
@@ -165,7 +174,8 @@ describe("Visualizer plugin", () => {
           },
           new InMemoryFileReader(),
           new InMemoryFileWriter(),
-          new ModuleWalkerSelector()
+          new ModuleWalkerSelector(),
+          fakeLogger
         );
 
         const { getStructure } = await skott.initialize();
@@ -193,200 +203,207 @@ describe("Visualizer plugin", () => {
           },
         });
       });
-    });
-  });
 
-  describe("When mapping the Skott graph into the Rush associated data structure", () => {
-    test("Should group project files nodes by project names", () => {
-      const rushProjectReferences: RushProjectReferences[] = [
-        { name: "@apps/app1", path: "apps/app1" },
-        { name: "@libs/lib1", path: "libs/lib1" },
-      ];
+      describe("When mapping the Skott graph into the Rush associated data structure", () => {
+        test("Should group project files nodes by project names", () => {
+          const rushProjectReferences: RushProjectReferences[] = [
+            { name: "@apps/app1", path: "apps/app1" },
+            { name: "@libs/lib1", path: "libs/lib1" },
+          ];
 
-      const skottGraphWithRushDependencies = {
-        "apps/app1/index.js": {
-          id: "apps/app1/index.js",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-            rushDependencies: [],
-          },
-        },
-        "libs/lib1/index.js": {
-          id: "libs/lib1/index.js",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-            rushDependencies: [],
-          },
-        },
-      };
+          const skottGraphWithRushDependencies = {
+            "apps/app1/index.js": {
+              id: "apps/app1/index.js",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+                rushDependencies: [],
+              },
+            },
+            "libs/lib1/index.js": {
+              id: "libs/lib1/index.js",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+                rushDependencies: [],
+              },
+            },
+          };
 
-      const { graph, files } = createRushGraph(
-        skottGraphWithRushDependencies,
-        rushProjectReferences
-      );
+          const { graph, files } = createRushGraph(
+            skottGraphWithRushDependencies,
+            rushProjectReferences
+          );
 
-      expect(graph).to.deep.equal({
-        "@apps/app1": {
-          id: "@apps/app1",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-          },
-        },
-        "@libs/lib1": {
-          id: "@libs/lib1",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-          },
-        },
+          expect(graph).to.deep.equal({
+            "@apps/app1": {
+              id: "@apps/app1",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+              },
+            },
+            "@libs/lib1": {
+              id: "@libs/lib1",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+              },
+            },
+          });
+          expect(files).to.deep.equal([
+            "apps/app1/index.js",
+            "libs/lib1/index.js",
+          ]);
+        });
+
+        test("Should create links at the Rush project-level when there are links between files of different projects", () => {
+          const rushProjectReferences: RushProjectReferences[] = [
+            { name: "@apps/app1", path: "apps/app1" },
+            { name: "@libs/lib1", path: "libs/lib1" },
+            { name: "@libs/lib2", path: "libs/lib2" },
+          ];
+
+          const skottGraphWithRushDependencies = {
+            "apps/app1/index.js": {
+              id: "apps/app1/index.js",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+                rushDependencies: ["@libs/lib1", "@libs/lib2"],
+              },
+            },
+            "apps/app1/main.js": {
+              id: "apps/app1/main.js",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+                rushDependencies: ["@libs/lib2"],
+              },
+            },
+            "libs/lib1/index.js": {
+              id: "libs/lib1/index.js",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+                rushDependencies: [],
+              },
+            },
+            "libs/lib2/index.js": {
+              id: "libs/lib2/index.js",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+                rushDependencies: [],
+              },
+            },
+          };
+
+          const { graph } = createRushGraph(
+            skottGraphWithRushDependencies,
+            rushProjectReferences
+          );
+
+          expect(graph).to.deep.equal({
+            "@apps/app1": {
+              id: "@apps/app1",
+              adjacentTo: ["@libs/lib1", "@libs/lib2"],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+              },
+            },
+            "@libs/lib1": {
+              id: "@libs/lib1",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+              },
+            },
+            "@libs/lib2": {
+              id: "@libs/lib2",
+              adjacentTo: [],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+              },
+            },
+          });
+        });
+
+        test("Should merge all project files bodies into project bodies", () => {
+          const rushProjectReferences: RushProjectReferences[] = [
+            { name: "@libs/lib1", path: "libs/lib1" },
+          ];
+
+          const skottGraphWithRushDependencies = {
+            "libs/lib1/index.js": {
+              id: "libs/lib1/index.js",
+              adjacentTo: [],
+              body: {
+                size: 1000,
+                thirdPartyDependencies: ["skott", "skott-webapp"],
+                builtinDependencies: ["node:fs", "node:path"],
+                rushDependencies: [],
+              },
+            },
+            "libs/lib1/lib.js": {
+              id: "libs/lib1/lib.js",
+              adjacentTo: [],
+              body: {
+                size: 3500,
+                thirdPartyDependencies: ["effect", "skott"],
+                builtinDependencies: ["node:child_process", "node:path"],
+                rushDependencies: [],
+              },
+            },
+          };
+
+          const { graph } = createRushGraph(
+            skottGraphWithRushDependencies,
+            rushProjectReferences
+          );
+
+          expect(graph).to.deep.equal({
+            "@libs/lib1": {
+              id: "@libs/lib1",
+              adjacentTo: [],
+              body: {
+                size: 4500,
+                thirdPartyDependencies: ["skott", "skott-webapp", "effect"],
+                builtinDependencies: [
+                  "node:fs",
+                  "node:path",
+                  "node:child_process",
+                ],
+              },
+            },
+          });
+        });
       });
-      expect(files).to.deep.equal(["apps/app1/index.js", "libs/lib1/index.js"]);
     });
 
-    test("Should create links at the Rush project-level when there are links between files of different projects", () => {
-      const rushProjectReferences: RushProjectReferences[] = [
-        { name: "@apps/app1", path: "apps/app1" },
-        { name: "@libs/lib1", path: "libs/lib1" },
-        { name: "@libs/lib2", path: "libs/lib2" },
-      ];
-
-      const skottGraphWithRushDependencies = {
-        "apps/app1/index.js": {
-          id: "apps/app1/index.js",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-            rushDependencies: ["@libs/lib1", "@libs/lib2"],
-          },
-        },
-        "apps/app1/main.js": {
-          id: "apps/app1/main.js",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-            rushDependencies: ["@libs/lib2"],
-          },
-        },
-        "libs/lib1/index.js": {
-          id: "libs/lib1/index.js",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-            rushDependencies: [],
-          },
-        },
-        "libs/lib2/index.js": {
-          id: "libs/lib2/index.js",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-            rushDependencies: [],
-          },
-        },
-      };
-
-      const { graph } = createRushGraph(
-        skottGraphWithRushDependencies,
-        rushProjectReferences
-      );
-
-      expect(graph).to.deep.equal({
-        "@apps/app1": {
-          id: "@apps/app1",
-          adjacentTo: ["@libs/lib1", "@libs/lib2"],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-          },
-        },
-        "@libs/lib1": {
-          id: "@libs/lib1",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-          },
-        },
-        "@libs/lib2": {
-          id: "@libs/lib2",
-          adjacentTo: [],
-          body: {
-            size: 0,
-            thirdPartyDependencies: [],
-            builtinDependencies: [],
-          },
-        },
-      });
-    });
-
-    test("Should merge all project files bodies into project bodies", () => {
-      const rushProjectReferences: RushProjectReferences[] = [
-        { name: "@libs/lib1", path: "libs/lib1" },
-      ];
-
-      const skottGraphWithRushDependencies = {
-        "libs/lib1/index.js": {
-          id: "libs/lib1/index.js",
-          adjacentTo: [],
-          body: {
-            size: 1000,
-            thirdPartyDependencies: ["skott", "skott-webapp"],
-            builtinDependencies: ["node:fs", "node:path"],
-            rushDependencies: [],
-          },
-        },
-        "libs/lib1/lib.js": {
-          id: "libs/lib1/lib.js",
-          adjacentTo: [],
-          body: {
-            size: 3500,
-            thirdPartyDependencies: ["effect", "skott"],
-            builtinDependencies: ["node:child_process", "node:path"],
-            rushDependencies: [],
-          },
-        },
-      };
-
-      const { graph } = createRushGraph(
-        skottGraphWithRushDependencies,
-        rushProjectReferences
-      );
-
-      expect(graph).to.deep.equal({
-        "@libs/lib1": {
-          id: "@libs/lib1",
-          adjacentTo: [],
-          body: {
-            size: 4500,
-            thirdPartyDependencies: ["skott", "skott-webapp", "effect"],
-            builtinDependencies: ["node:fs", "node:path", "node:child_process"],
-          },
-        },
-      });
-    });
-
-    describe("When using workspace dependency analysis which is complementary to source-code analysis", () => {
+    describe("When using workspace dependency analysis which can be complementary to source-code analysis", () => {
       describe("When there is no workspace dependencies found", () => {
         test("Should only include third-party/workspace dependencies relying on source-code analysis", () => {
           const rushProjectReferences: RushProjectReferences[] = [
@@ -433,7 +450,7 @@ describe("Visualizer plugin", () => {
         });
       });
 
-      describe("When there are additional workspace dependencies that were not found by source-code analysis", () => {
+      describe("When there are additional workspace dependencies", () => {
         test("Should complete workspace information linking third-party/workspace dependencies", () => {
           const rushProjectReferences: RushProjectReferences[] = [
             { name: "@libs/lib1", path: "libs/lib1" },

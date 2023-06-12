@@ -1,6 +1,7 @@
-import { SkottNode, SkottStructure } from "skott";
+import type { SkottStructure } from "skott";
+import type { SkottNode } from "skott/graph/node";
 
-import { RushDependencies } from "./dependency-resolver.js";
+import type { RushDependencies } from "./dependency-resolver.js";
 
 function createUniqueCollection<T>(collection: Array<T>): Array<T> {
   return Array.from(new Set(collection));

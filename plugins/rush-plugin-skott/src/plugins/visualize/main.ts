@@ -5,14 +5,14 @@ import kleur from "kleur";
 import { ServerResponse } from "node:http";
 import polka from "polka";
 import sirv from "sirv";
-import skott, { SkottStructure } from "skott";
+import skott, { type SkottStructure } from "skott";
 import resolvePathToWebApp from "skott-webapp";
 import { EcmaScriptDependencyResolver } from "skott/modules/resolvers/ecmascript/resolver";
 import { open } from "topenurl";
 
 import { loadRushConfiguration } from "../workspace.js";
 import {
-  RushDependencies,
+  type RushDependencies,
   RushDependencyResolver,
 } from "./dependency-resolver.js";
 import { createRushGraph } from "./graph.js";
@@ -22,6 +22,14 @@ async function buildRushStructure() {
 
   const projectNames = config.projects.map((project) => project.packageName);
 
+  // If skip source code analysis
+  // then don't use skott at all
+
+  // otherwise
+  // Then keep only RushDependencyResolver
+  // provide {} graph in createRushGraph
+  // provide just the workspace in 3rd argument using getWorkspace()
+  // remove dependency tracking
   const { graph: skottGraph } = await skott<RushDependencies>({
     dependencyResolvers: [
       new RushDependencyResolver(projectNames),

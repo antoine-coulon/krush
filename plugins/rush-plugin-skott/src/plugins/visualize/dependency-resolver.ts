@@ -1,10 +1,9 @@
 import {
   continueResolution,
-  DependencyResolver,
-  DependencyResolverOptions,
+  type DependencyResolver,
+  type DependencyResolverOptions,
   skipNextResolvers,
 } from "skott/modules/resolvers/base-resolver";
-import * as Option from "@effect/data/Option";
 
 export interface RushDependencies {
   rushDependencies?: string[];
@@ -19,9 +18,7 @@ export class RushDependencyResolver
     moduleDeclaration,
     projectGraph,
     resolvedNodePath,
-  }: DependencyResolverOptions<RushDependencies>): Promise<
-    Option.Option<{ exitOnResolve: boolean }>
-  > {
+  }: DependencyResolverOptions<RushDependencies>) {
     if (this.rushProjectReferences.includes(moduleDeclaration)) {
       projectGraph.mergeVertexBody(resolvedNodePath, (body) => {
         body.rushDependencies = (body.rushDependencies ?? []).concat(
