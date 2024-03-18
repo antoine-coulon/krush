@@ -12,26 +12,24 @@ class RushConfigurationError extends Error {
 }
 
 export function loadRushConfiguration() {
-  return pipe(
-    Effect.attempt(() => {
-      const config = RushSdk.RushConfiguration.loadFromDefaultLocation({
-        startingFolder: process.cwd(),
-      });
+  try {
+    const config = RushSdk.RushConfiguration.loadFromDefaultLocation({
+      startingFolder: process.cwd(),
+    });
 
-      if (!config) {
-        throw new Error();
-      }
+    if (!config) {
+      throw new Error();
+    }
 
-      console.log(
-        kleur.bold().green("✓"),
-        kleur.bold().white("Rush configuration found")
-      );
+    console.log(
+      kleur.bold().green("✓"),
+      kleur.bold().white("Rush configuration found")
+    );
 
-      return config;
-    }),
-    Effect.orElseFail(
-      () =>
-        new RushConfigurationError("Could not load 'rush.json' configuration")
-    )
-  );
+    return config;
+  } catch {
+    throw new RushConfigurationError(
+      "Could not load 'rush.json' configuration"
+    );
+  }
 }

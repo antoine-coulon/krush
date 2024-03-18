@@ -12,6 +12,20 @@ export interface RushProjectReferences {
   path: string;
 }
 
+export interface SkottWorkspace {
+  [packageName: string]: {
+    dependencies: {
+      [packageName: string]: string;
+    };
+    devDependencies: {
+      [packageName: string]: string;
+    };
+    peerDependencies: {
+      [packageName: string]: string;
+    };
+  };
+}
+
 function isRushWorkspaceDependency(
   rushProjectReferences: RushProjectReferences[]
 ) {
@@ -26,14 +40,42 @@ function isThirdPartyDependency(
     !rushProjectReferences.find((ref) => ref.name === dependency);
 }
 
-export function createRushGraph(
+function fromWorkspaceInformationOnly(
+  skottWorkspace: SkottWorkspace,
+  rushReferences: RushProjectReferences[]
+) {
+  const workspaceOnlyGraph: Record<string, SkottNode> = {};
+
+  for (const [workspacePackage, dependencies] of Object.entries(
+    skottWorkspace
+  )) {
+    const flattenedDeps = [
+      ...Object.keys(dependencies.dependencies),
+      ...Object.keys(dependencies.devDependencies),
+      ...Object.keys(dependencies.peerDependencies),
+    ];
+
+    workspaceOnlyGraph[workspacePackage] = {
+      id: workspacePackage,
+      adjacentTo: flattenedDeps.filter(
+        isRushWorkspaceDependency(rushReferences)
+      ),
+      body: {
+        size: 0,
+        thirdPartyDependencies: [],
+        builtinDependencies: [],
+      },
+    };
+  }
+
+  return { graph: workspaceOnlyGraph, files: [] };
+}
+
+function fromSkottGraph(
   skottGraph: Record<string, SkottNode<RushDependencies>>,
   rushProjectReferences: RushProjectReferences[],
-  skottWorkspace: Record<
-    string,
-    { prodDependencies: string[]; devDependencies: string[] }
-  > = {}
-): SkottStructure<unknown> {
+  skottWorkspace: SkottWorkspace
+) {
   return Object.values(skottGraph).reduce(
     ({ graph, files }, node) => {
       files.push(node.id);
@@ -44,10 +86,15 @@ export function createRushGraph(
 
       if (rushRef) {
         const rushNode = graph[rushRef.name];
-        const prodDependencies =
-          skottWorkspace[rushRef.name]?.prodDependencies ?? [];
-        const devDependencies =
-          skottWorkspace[rushRef.name]?.devDependencies ?? [];
+        const prodDependencies = Object.keys(
+          skottWorkspace[rushRef.name]?.dependencies ?? []
+        );
+        const devDependencies = Object.keys(
+          skottWorkspace[rushRef.name]?.devDependencies ?? []
+        );
+        const peerDependencies = Object.keys(
+          skottWorkspace[rushRef.name]?.peerDependencies ?? []
+        );
 
         graph[rushRef.name] = {
           id: rushRef.name,
@@ -64,6 +111,11 @@ export function createRushGraph(
                   isRushWorkspaceDependency(rushProjectReferences)
                 )
               )
+              .concat(
+                peerDependencies.filter(
+                  isRushWorkspaceDependency(rushProjectReferences)
+                )
+              )
           ),
           body: {
             size: (rushNode?.body.size ?? 0) + node.body.size,
@@ -77,6 +129,11 @@ export function createRushGraph(
                 )
                 .concat(
                   devDependencies.filter(
+                    isThirdPartyDependency(rushProjectReferences)
+                  )
+                )
+                .concat(
+                  peerDependencies.filter(
                     isThirdPartyDependency(rushProjectReferences)
                   )
                 )
@@ -97,4 +154,16 @@ export function createRushGraph(
       files: [],
     } as SkottStructure<unknown>
   );
+}
+
+export function createRushGraph(
+  skottGraph: Record<string, SkottNode<RushDependencies>>,
+  rushProjectReferences: RushProjectReferences[],
+  skottWorkspace: SkottWorkspace = {}
+): SkottStructure<unknown> {
+  if (Object.keys(skottGraph).length === 0) {
+    return fromWorkspaceInformationOnly(skottWorkspace, rushProjectReferences);
+  }
+
+  return fromSkottGraph(skottGraph, rushProjectReferences, skottWorkspace);
 }

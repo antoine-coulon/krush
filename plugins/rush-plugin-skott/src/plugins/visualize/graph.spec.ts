@@ -403,6 +403,66 @@ describe("Visualizer plugin", () => {
       });
     });
 
+    describe("When only using workspace dependency analysis without source-code analysis", () => {
+      describe("When there is no workspace dependencies found", () => {
+        test("Should produce an empty graph", () => {
+          const rushProjectReferences: RushProjectReferences[] = [
+            { name: "@libs/lib1", path: "libs/lib1" },
+          ];
+          const workspace = {};
+          const emptySkottGraphBecauseNoStaticCodeAnalysis = {};
+
+          const { graph } = createRushGraph(
+            emptySkottGraphBecauseNoStaticCodeAnalysis,
+            rushProjectReferences,
+            workspace
+          );
+
+          expect(graph).to.deep.equal({});
+        });
+      });
+
+      describe("When there are workspace dependencies", () => {
+        test("Should only add workspace dependencies linking", () => {
+          const rushProjectReferences: RushProjectReferences[] = [
+            { name: "@libs/lib1", path: "libs/lib1" },
+            { name: "@libs/lib2", path: "libs/lib2" },
+            { name: "@libs/lib3", path: "libs/lib3" },
+          ];
+          const workspace = {
+            "@libs/lib1": {
+              dependencies: {
+                "@libs/lib2": "1.0.0",
+              },
+              devDependencies: {
+                "@libs/lib3": "1.0.0",
+              },
+              peerDependencies: {},
+            },
+          };
+          const emptySkottGraphBecauseNoStaticCodeAnalysis = {};
+
+          const { graph } = createRushGraph(
+            emptySkottGraphBecauseNoStaticCodeAnalysis,
+            rushProjectReferences,
+            workspace
+          );
+
+          expect(graph).to.deep.equal({
+            "@libs/lib1": {
+              id: "@libs/lib1",
+              adjacentTo: ["@libs/lib2", "@libs/lib3"],
+              body: {
+                size: 0,
+                thirdPartyDependencies: [],
+                builtinDependencies: [],
+              },
+            },
+          });
+        });
+      });
+    });
+
     describe("When using workspace dependency analysis which can be complementary to source-code analysis", () => {
       describe("When there is no workspace dependencies found", () => {
         test("Should only include third-party/workspace dependencies relying on source-code analysis", () => {
@@ -412,8 +472,9 @@ describe("Visualizer plugin", () => {
 
           const workspace = {
             "@libs/lib1": {
-              prodDependencies: [],
-              devDependencies: [],
+              dependencies: {},
+              devDependencies: {},
+              peerDependencies: {},
             },
           };
 
@@ -462,6 +523,7 @@ describe("Visualizer plugin", () => {
             thirdPartyDeps: {
               dev: "eslint",
               prod: "lodash",
+              peer: "react",
             },
             workspaceDeps: {
               dev: "@libs/lib3",
@@ -471,14 +533,15 @@ describe("Visualizer plugin", () => {
 
           const workspace = {
             "@libs/lib1": {
-              prodDependencies: [
-                deps.thirdPartyDeps.prod,
-                deps.workspaceDeps.prod,
-              ],
-              devDependencies: [
-                deps.thirdPartyDeps.dev,
-                deps.workspaceDeps.dev,
-              ],
+              dependencies: {
+                [deps.thirdPartyDeps.prod]: "1.0.0",
+                [deps.workspaceDeps.prod]: "1.0.0",
+              },
+              devDependencies: {
+                [deps.thirdPartyDeps.dev]: "1.0.0",
+                [deps.workspaceDeps.dev]: "1.0.0",
+              },
+              peerDependencies: { [deps.thirdPartyDeps.peer]: "1.0.0" },
             },
           };
 
@@ -507,7 +570,7 @@ describe("Visualizer plugin", () => {
               adjacentTo: ["@libs/lib2", "@libs/lib3"],
               body: {
                 size: 1000,
-                thirdPartyDependencies: ["skott", "lodash", "eslint"],
+                thirdPartyDependencies: ["skott", "lodash", "eslint", "react"],
                 builtinDependencies: ["node:fs"],
               },
             },

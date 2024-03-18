@@ -15,5 +15,13 @@
       "shellCommand": "node <packageFolder>/lib/unused/main.js",
       "safeForSimultaneousRushProcesses": false
     }
+  ],
+  "parameters": [
+    {
+      "associatedCommands": ["graph"],
+      "parameterKind": "flag",
+      "description": "Disables source code analysis and only links packages based on the package.json files",
+      "longName": "--no-source-code-analysis"
+    }
   ]
 }

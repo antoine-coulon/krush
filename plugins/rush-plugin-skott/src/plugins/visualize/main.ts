@@ -1,4 +1,3 @@
-import * as Effect from "@effect/io/Effect";
 import compression from "compression";
 import { DiGraph } from "digraph-js";
 import kleur from "kleur";
@@ -16,31 +15,64 @@ import {
   RushDependencyResolver,
 } from "./dependency-resolver.js";
 import { createRushGraph } from "./graph.js";
+import type { SkottNode } from "skott/graph/node";
 
-async function buildRushStructure() {
-  const config = await Effect.runPromise(loadRushConfiguration());
+interface CliFlags {
+  useStaticSourceAnalysis: boolean;
+}
+
+function parseCliFlags() {
+  const flags = process.argv.slice(2);
+
+  return {
+    useStaticSourceAnalysis: flags.includes("--skip-source-analysis"),
+  };
+}
+
+/**
+ * TODO: Make skott exports building blocks outside of its instance to avoid
+ * running all the work required for the source analysis when it's not needed.
+ */
+function useSkottWorkspaceWithNoSourceCodeAnalysis() {
+  return skott<RushDependencies>({
+    fileExtensions: [],
+  }).then(({ getWorkspace }) => getWorkspace());
+}
+
+async function buildRushStructure({ useStaticSourceAnalysis }: CliFlags) {
+  const config = loadRushConfiguration();
 
   const projectNames = config.projects.map((project) => project.packageName);
 
-  // If skip source code analysis
-  // then don't use skott at all
+  let skottGraph: Record<string, SkottNode<RushDependencies>> = {};
+  let workspace = {};
 
-  // otherwise
-  // Then keep only RushDependencyResolver
-  // provide {} graph in createRushGraph
-  // provide just the workspace in 3rd argument using getWorkspace()
-  // remove dependency tracking
-  const { graph: skottGraph } = await skott<RushDependencies>({
-    dependencyResolvers: [
-      new RushDependencyResolver(projectNames),
-      new EcmaScriptDependencyResolver(),
-    ],
-    dependencyTracking: {
-      builtin: true,
-      thirdParty: true,
-      typeOnly: true,
-    },
-  }).then(({ getStructure }) => getStructure());
+  if (useStaticSourceAnalysis) {
+    const skottResult = await skott<RushDependencies>({
+      dependencyResolvers: [
+        new RushDependencyResolver(projectNames),
+        new EcmaScriptDependencyResolver(),
+      ],
+      dependencyTracking: {
+        builtin: true,
+        thirdParty: true,
+        typeOnly: true,
+      },
+    }).then(({ getStructure, getWorkspace }) => ({
+      structure: getStructure(),
+      workspace: getWorkspace(),
+    }));
+
+    skottGraph = skottResult.structure.graph;
+    workspace = skottResult.workspace;
+  } else {
+    console.log(
+      kleur.bold().green("✓"),
+      kleur.bold("Skipping source code analysis")
+    );
+
+    workspace = await useSkottWorkspaceWithNoSourceCodeAnalysis();
+  }
 
   const rushGraph = createRushGraph(
     skottGraph,
@@ -48,8 +80,7 @@ async function buildRushStructure() {
       name: packageName,
       path: projectRelativeFolder,
     })),
-    // @TODO: implement that in skott
-    {}
+    workspace
   );
 
   console.log(kleur.bold().green("✓"), kleur.bold("Rush graph created"));
@@ -106,9 +137,11 @@ function openWebApplication(skottStructure: SkottStructure): void {
   });
 }
 
-async function main() {
-  const rushStructure = await buildRushStructure();
+async function main(flags: CliFlags) {
+  const rushStructure = await buildRushStructure(flags);
   openWebApplication(rushStructure);
 }
 
-main().catch((error) => console.error(error));
+const flags = parseCliFlags();
+
+main(flags).catch((error) => console.error(error));
